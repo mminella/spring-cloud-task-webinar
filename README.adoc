@@ -1,0 +1,66 @@
+# Spring Cloud Task Webinar
+
+## Dependencies and configuration
+
+Configuration required for this sample:
+
+* An FTP server (I used the embedded one available on OS X to run the demo locally)
+* Redis running locally
+* In the `spring-cloud-task-ftp` project an `application.properties` with the following
+configuration (empty values should be configured to your environment):
+
+```
+logging.level.org.springframework.integration=DEBUG
+logging.level.org.springframework.cloud.task=DEBUG
+logging.level.org.springframework.cloud.stream=DEBUG
+spring.main.web-environment=false
+spring.application.name=ftp
+spring.datasource.driverClassName=
+spring.datasource.url=
+spring.datasource.username=
+spring.datasource.password=
+spring.datasource.platform=
+spring.datasource.continueOnError=false
+spring.cloud.stream.bindings.output.destination=task-requests
+io.spring.cloud.task.ftp.host=
+io.spring.cloud.task.ftp.port=
+io.spring.cloud.task.ftp.username=
+io.spring.cloud.task.ftp.password=
+```
+
+* In the `spring-cloud-task-import` project an `application.properties` with the following
+configuration (empty values should be configured to your environment):
+```
+spring.datasource.driverClassName=
+spring.datasource.url=
+spring.datasource.username=
+spring.datasource.password=
+spring.datasource.platform=
+spring.application.name=importJob
+logging.level.org.springframework.cloud.task=DEBUG
+spring.datasource.continueOnError=true
+spring.batch.job.enabled=false
+```
+
+For this project, the pom.xml files are configured to use MySql.  If you use another
+database, you'll need to update the pom.xml files to use the appropriate driver as well as
+provide a schema-*.sql in `spring-cloud-task-import/src/main/resources` for the customer
+table.
+
+## Running the project
+
+To build the project, from the root directory:
+```
+$ mvn clean install
+```
+
+Once that has completed, confirm that your source and destination directories for the file
+ftp exist ( '/' on the remote server and `/tmp/inbound/` on the local server).  The data
+ file used in the demo is found in `spring-cloud-task-import/src/main/resources/data`.
+
+To run the project:
+
+* Start the sink by executing: `$ java -jar spring-cloud-task-sink/target/sink-0.0.1-SNAPSHOT.jar`
+* Once the sink is running, kick off the ftp process via `$ java -jar spring-cloud-task-ftp/target/ftp-0.0.1-SNAPSHOT.jar`
+* The results should be that 69500 records end up in the `customer` table and and 8 tasks
+ have been executed in the `task_execution` table.
